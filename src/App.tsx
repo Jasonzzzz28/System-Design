@@ -5,7 +5,7 @@ import NoteDetail from './pages/NoteDetail';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/System-Design">
       <Header />
       <Routes>
         <Route path="/" element={<NotesList />} />
