@@ -1,0 +1,116 @@
+.notes-list {
+    flex: 1;
+    padding: var(--spacing-2xl) 0;
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+    animation: fadeIn 0.6s ease-out;
+}
+
+.empty-state {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.empty-state-icon {
+    margin-bottom: var(--spacing-lg);
+    display: inline-block;
+}
+
+.empty-state-icon svg {
+    filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+}
+
+.rotating-circle {
+    animation: rotate 20s linear infinite;
+    transform-origin: center;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.empty-state-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-md);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.empty-state-description {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-xl);
+}
+
+.empty-state-hint {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    backdrop-filter: blur(10px);
+}
+
+.hint-text {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-weight: var(--font-weight-medium);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .notes-list {
+        padding: var(--spacing-xl) 0;
+    }
+
+    .empty-state-icon svg {
+        width: 100px;
+        height: 100px;
+    }
+
+    .empty-state-title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .empty-state-description {
+        font-size: var(--font-size-base);
+    }
+}
+
+@media (max-width: 480px) {
+    .notes-list {
+        padding: var(--spacing-lg) 0;
+    }
+
+    .empty-state-icon svg {
+        width: 80px;
+        height: 80px;
+    }
+
+    .empty-state-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .empty-state-description {
+        font-size: var(--font-size-sm);
+    }
+
+    .hint-text {
+        font-size: var(--font-size-sm);
+    }
+}
