@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { notes } from '../data/notes';
 import ImageViewer from '../components/ImageViewer';
+import twitterNewsFeedImage from '../assets/twitter-news-feed.svg';
 import './NoteDetail.css';
 
 const NoteDetail = () => {
@@ -124,7 +125,7 @@ const NoteDetail = () => {
                         <section className="content-section">
                             <h2>High Level Design</h2>
                             <ImageViewer
-                                src="/src/assets/twitter-news-feed.svg"
+                                src={twitterNewsFeedImage}
                                 alt="Twitter News Feed - High Level System Design"
                             />
                         </section>
