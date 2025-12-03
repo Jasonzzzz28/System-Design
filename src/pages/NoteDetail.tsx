@@ -58,10 +58,10 @@ const NoteDetail = () => {
                         <section className="content-section">
                             <h2>Functional Requirements</h2>
                             <ol>
-                                <li>User should be able to follow/unfollow other users</li>
-                                <li>User should be able to create posts</li>
-                                <li>User should be able to view a feed of posts from the users they are following</li>
-                                <li>User should be able to page through of the news feed</li>
+                                <li>Users should be able to follow/unfollow other users</li>
+                                <li>Users should be able to create posts</li>
+                                <li>Users should be able to view a feed of posts from the users they are following</li>
+                                <li>Users should be able to page through of the news feed</li>
                             </ol>
                         </section>
 
