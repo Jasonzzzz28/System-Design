@@ -9,7 +9,7 @@ const Header = () => {
                         <span className="gradient-text">System Design</span> Notes
                     </h1>
                     <p className="header-subtitle">
-                        My solutions for system design problems
+                        It's just me practicing system design problems [:D]
                     </p>
                 </div>
             </div>

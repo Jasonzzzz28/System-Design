@@ -144,6 +144,18 @@
     overflow: hidden;
 }
 
+.explanation-block {
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    border-left: 3px solid var(--color-primary-light);
+    background: rgba(219, 171, 219, 0.05);
+    padding-top: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
 .design-image {
     width: 100%;
     height: auto;
