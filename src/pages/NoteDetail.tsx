@@ -126,7 +126,7 @@ const NoteDetail = () => {
                                 </section>
 
                                 <section className="content-section">
-                                    <h2>High Level Design</h2>
+                                    <h2>High Level Design and Deep Dives</h2>
                                     <ImageViewer
                                         src={twitterNewsFeedImage}
                                         alt="Twitter News Feed - High Level System Design"
