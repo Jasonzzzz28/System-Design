@@ -1,73 +1,108 @@
-# React + TypeScript + Vite
+# System Design Notes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+It's just me practicing system design problems [:D] 
+It's not very rewarding just practicing, so I'm going to share it here.
 
-Currently, two official plugins are available:
+## 📚 Current Notes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **URL Shortener**: Design for a scalable URL shortener service handling 100M daily active users
+- **Twitter News Feed**: Design for a Twitter-like news feed system with fan-out/fan-in patterns
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **React Router** - Client-side routing (HashRouter for GitHub Pages compatibility)
+- **CSS** - Custom styling with CSS variables
 
-## Expanding the ESLint configuration
+## 📦 Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd System-Design
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. Install dependencies:
+```bash
+npm install
 ```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Build for production:
+```bash
+npm run build
+```
+
+5. Preview production build:
+```bash
+npm run preview
+```
+
+## 🏗️ Project Structure
+
+```
+src/
+├── components/          # Reusable React components
+│   ├── Header.tsx      # Site header component
+│   ├── NotesList.tsx   # List view of all notes
+│   ├── NoteCard.tsx    # Individual note card component
+│   └── ImageViewer.tsx # SVG diagram viewer component
+├── pages/              # Page components
+│   └── NoteDetail.tsx  # Individual note detail page
+├── data/               # Data files
+│   └── notes.ts        # Notes data structure
+├── assets/             # Static assets
+│   ├── *.svg          # System design diagrams
+└── types.ts           # TypeScript type definitions
+```
+
+## 📝 Adding New Notes
+
+To add a new system design note:
+
+1. Add a new entry to `src/data/notes.ts`:
+```typescript
+{
+    id: '3',
+    title: 'Your Note Title',
+    description: 'Brief description',
+    date: 'YYYY-MM-DD', // UTC time
+    slug: 'your-note-slug',
+    tags: ['Tag1', 'Tag2']
+}
+```
+
+2. Add the note content in `src/pages/NoteDetail.tsx` by adding a new condition in the conditional rendering.
+
+3. Add your diagram SVG to `src/assets/` and import it in `NoteDetail.tsx`.
+
+## 🌐 Deployment
+
+This project is configured for GitHub Pages deployment:
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. The `dist/` folder contains the production-ready files.
+
+3. Deploy the `dist/` folder to GitHub Pages (or your preferred hosting service).
+
+The project uses HashRouter, which is compatible with GitHub Pages static hosting.
+
+## 📄 License
+
+This project is open source and available for educational purposes.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to submit issues or pull requests.
+
+---
