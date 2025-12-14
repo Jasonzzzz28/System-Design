@@ -3,6 +3,7 @@ import { notes } from '../data/notes';
 import ImageViewer from '../components/ImageViewer';
 import twitterNewsFeedImage from '../assets/twitter-news-feed.svg';
 import urlShortenerImage from '../assets/url-shortener.svg';
+import youtubeImage from '../assets/youtube.svg';
 import './NoteDetail.css';
 
 const NoteDetail = () => {
@@ -233,6 +234,114 @@ const NoteDetail = () => {
                                             </ul>
                                         </div>
                                     </div>
+                                </section>
+                            </>
+                        ) : note.slug === 'youtube' ? (
+                            <>
+                                <section className="content-section">
+                                    <h2>Prerequisite Concepts</h2>
+                                    <ol>
+                                        <li><strong>Video Codec</strong> – The method that compresses and decompresses video. It affects quality, speed, and file size. (e.g., H.264, H.265, AV1)</li>
+                                        <li><strong>Video Container</strong> – The file format that packages video, audio, and subtitles together. (e.g., MP4, MKV)</li>
+                                        <li><strong>Bitrate</strong> – The amount of data per second in a video. Higher bitrate = better quality, larger size.</li>
+                                        <li><strong>Manifest Files</strong> – Streaming instruction files that list video qualities and the small segments the player should download.</li>
+                                        <li><strong>Transcoder</strong> – A tool that converts a video into different formats, resolutions, or bitrates.</li>
+                                        <li><strong>Adaptive Bitrate Streaming</strong> – A streaming method where the player automatically switches between different video quality levels based on your current internet speed.</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Functional Requirements</h2>
+                                    <ol>
+                                        <li>User should be able to upload videos</li>
+                                        <li>User should be able to watch videos</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Non-Functional Requirements</h2>
+                                    <ol>
+                                        <li>Highly available (prefer availability over consistency)</li>
+                                        <li>Low latency for uploading and streaming videos</li>
+                                        <li>Scale to high volume of user activities. (100M uploads per day, 10B views per day)</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Core Entities</h2>
+                                    <ol>
+                                        <li>Users</li>
+                                        <li>Videos</li>
+                                        <li>Video Metadata</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>API</h2>
+
+                                    <div className="api-endpoint">
+                                        <h3>1. POST /videos</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "video",</div>
+                                            <div className="code-line indent">  "video_metadata"</div>
+                                            <div className="code-line">{`}`}</div>
+                                            <div className="code-line response">⇒ 201 CREATED</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. GET /videos/{`{video-id}`}</h3>
+                                        <div className="code-block">
+                                            <div className="code-line response">⇒ 200 OK</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "video",</div>
+                                            <div className="code-line indent">  "video_metadata"</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>High Level Design + Deep Dives</h2>
+                                    
+                                    <div className="api-endpoint">
+                                        <h3>Upload videos?</h3>
+                                        <p>Store videos in BLOB storage like AWS S3.</p>
+                                        <p>Use presigned url to upload directly to the BLOB storage.</p>
+                                        <p>Video chunking. This can happen on client side or server side. Most common practice is on the client side. (browser)</p>
+                                        
+                                        <p><strong>Resumable upload?</strong></p>
+                                        <div className="explanation-block">
+                                            <p>The client splits the video into small hashed chunks and uploads them to BLOB store.</p>
+                                            <p>Each successful chunk upload is verified by the backend and marked as uploaded.</p>
+                                            <p>After completion, BLOB store emits a single event to trigger processing.</p>
+                                            <p>Uploads can be resumed by skipping already uploaded chunks.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>Stream videos?</h3>
+                                        <ol style={{ marginLeft: 'var(--spacing-lg)', marginTop: 'var(--spacing-xs)' }}>
+                                            <li>Video chunker breaks video into small segments (2-10s). The transcoder converts uploaded videos into different formats, resolutions, or bitrates.</li>
+                                            <li>The client fetches the video metadata.</li>
+                                            <li>It downloads the manifest, picks a quality based on network conditions.</li>
+                                            <li>It starts downloading and playing the first segment, automatically switches the quality based on internet speed.</li>
+                                        </ol>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>Improve streaming latency?</h3>
+                                        <p><strong>CDN (Content Delivery Network)</strong> - a global network of servers that stores copies (caches) of website content (images, videos, scripts) on "edge" servers closer to users.</p>
+                                    </div>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>High Level Design</h2>
+                                    <ImageViewer
+                                        src={youtubeImage}
+                                        alt="YouTube - High Level System Design"
+                                    />
                                 </section>
                             </>
                         ) : null}

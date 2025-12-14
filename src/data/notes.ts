@@ -16,5 +16,13 @@ export const notes: Note[] = [
         date: '2025-12-03',
         slug: 'twitter-news-feed',
         tags: ['News Feed System', 'Fan-out', 'Fan-in']
+    },
+    {
+        id: '3',
+        title: 'Design YouTube',
+        description: 'A comprehensive system design for building a scalable video streaming platform like YouTube, covering video upload, transcoding, adaptive bitrate streaming, and CDN distribution to handle 100M uploads and 10B views per day.',
+        date: '2025-12-14',
+        slug: 'youtube',
+        tags: ['Video Upload', 'Video Streaming', 'Blob Storage', 'CDN']
     }
 ];
