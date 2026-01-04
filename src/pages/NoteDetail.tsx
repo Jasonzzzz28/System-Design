@@ -4,6 +4,7 @@ import ImageViewer from '../components/ImageViewer';
 import twitterNewsFeedImage from '../assets/twitter-news-feed.svg';
 import urlShortenerImage from '../assets/url-shortener.svg';
 import youtubeImage from '../assets/youtube.svg';
+import jobSchedulerImage from '../assets/job-scheduler.svg';
 import './NoteDetail.css';
 
 const NoteDetail = () => {
@@ -342,6 +343,101 @@ const NoteDetail = () => {
                                         src={youtubeImage}
                                         alt="YouTube - High Level System Design"
                                     />
+                                </section>
+                            </>
+                        ) : note.slug === 'distributed-job-scheduler' ? (
+                            <>
+                                <section className="content-section">
+                                    <h2>Functional Requirements</h2>
+                                    <ol>
+                                        <li>Users can submit ad-hoc/scheduled jobs</li>
+                                        <li>Users can cancel jobs</li>
+                                        <li>Users can view job schedules, execution status, and etc.</li>
+                                        <li>The system should execute the jobs in distributed method</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Non-Functional Requirements</h2>
+                                    <ol>
+                                        <li><strong>Scalability:</strong> support large volume of users and jobs. (e.g. 100M jobs daily)</li>
+                                        <li><strong>High availability</strong></li>
+                                        <li><strong>Low latency:</strong> Job should run less than couple of seconds after the scheduled time. (ideally &lt; 100ms)</li>
+                                        <li><strong>Consistency:</strong> Consistent job status. Ideally, jobs should be executed only once.</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Core Entities</h2>
+                                    <ol>
+                                        <li>Users</li>
+                                        <li>Jobs (job_id, execution_datetime, frequency, created_at, user_id, status, last_executed_at, next_execution_time, ...)</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>API</h2>
+
+                                    <div className="api-endpoint">
+                                        <h3>1. POST /jobs</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "job_id",</div>
+                                            <div className="code-line indent">  "start_datetime",</div>
+                                            <div className="code-line indent">  "frequency",</div>
+                                            <div className="code-line indent">  "created_at",</div>
+                                            <div className="code-line indent">  "user_id"</div>
+                                            <div className="code-line">{`}`}</div>
+                                            <div className="code-line response">⇒ 201 CREATED</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. DELETE /jobs/{`{job-id}`}</h3>
+                                        <div className="code-block">
+                                            <div className="code-line response">⇒ 204 NO CONTENT</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>3. GET /jobs/{`{job-id}`}</h3>
+                                        <div className="code-block">
+                                            <div className="code-line indent">/jobs?status=failed&user_id=user1</div>
+                                            <div className="code-line indent">/jobs/execution?worker_id=w1&status=completed</div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>High Level Design</h2>
+                                    <ImageViewer
+                                        src={jobSchedulerImage}
+                                        alt="Distributed Job Scheduler - High Level System Design"
+                                    />
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Deep Dives</h2>
+                                    
+                                    <div className="api-endpoint">
+                                        <h3>1. How to ensure jobs are not processed by multiple workers at the same time?</h3>
+                                        <p>Partition the job schedule table into segments based on job_id. The coordinator can assign segments to specific worker nodes.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. How to handle job failure?</h3>
+                                        <p>Retry with exponential backoff. If exceed the max_retries, update the Job status to failed.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>3. How to handle worker failure?</h3>
+                                        <p>The coordinator monitors the heartbeats sent by worker nodes and performs periodic health checks on worker nodes (CPU, Memory, Disk, Network Connectivity).</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>4. Rate limiting?</h3>
+                                        <p>At job submission level, job queue level, work node level.</p>
+                                    </div>
                                 </section>
                             </>
                         ) : null}

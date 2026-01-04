@@ -24,5 +24,13 @@ export const notes: Note[] = [
         date: '2025-12-14',
         slug: 'youtube',
         tags: ['Video Upload', 'Video Streaming', 'Blob Storage', 'CDN']
+    },
+    {
+        id: '4',
+        title: 'Distributed Job Scheduler',
+        description: 'A comprehensive system design for building a scalable distributed job scheduler to handle 100M jobs daily with high availability and low latency execution.',
+        date: '2026-01-04',
+        slug: 'distributed-job-scheduler',
+        tags: ['Job Scheduler', 'Distributed Systems', 'Queue', 'Replication']
     }
 ];
