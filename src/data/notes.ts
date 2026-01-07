@@ -32,5 +32,13 @@ export const notes: Note[] = [
         date: '2026-01-04',
         slug: 'distributed-job-scheduler',
         tags: ['Job Scheduler', 'Distributed Systems', 'Queue', 'Replication']
+    },
+    {
+        id: '5',
+        title: 'Ticket Booking System like Ticketmaster/StubHub',
+        description: 'A comprehensive system design for building a scalable ticket booking system to handle 10M DAU with high availability, ACID consistency for bookings, and low latency for event viewing and search.',
+        date: '2026-01-06',
+        slug: 'ticket-booking-system',
+        tags: ['Ticket Booking', 'ACID', 'Distributed Lock', 'Full-text Search']
     }
 ];

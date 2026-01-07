@@ -5,6 +5,7 @@ import twitterNewsFeedImage from '../assets/twitter-news-feed.svg';
 import urlShortenerImage from '../assets/url-shortener.svg';
 import youtubeImage from '../assets/youtube.svg';
 import jobSchedulerImage from '../assets/job-scheduler.svg';
+import ticketBookingImage from '../assets/ticket-booking.svg';
 import './NoteDetail.css';
 
 const NoteDetail = () => {
@@ -437,6 +438,151 @@ const NoteDetail = () => {
                                     <div className="api-endpoint">
                                         <h3>4. Rate limiting?</h3>
                                         <p>At job submission level, job queue level, work node level.</p>
+                                    </div>
+                                </section>
+                            </>
+                        ) : note.slug === 'ticket-booking-system' ? (
+                            <>
+                                <section className="content-section">
+                                    <h2>Functional Requirements</h2>
+                                    <ol>
+                                        <li>Users can view events</li>
+                                        <li>Users can search events</li>
+                                        <li>Users can book available tickets</li>
+                                        <li>[Out of scope] Users can view booked tickets</li>
+                                        <li>[Out of scope] Users can sell/transfer tickets</li>
+                                        <li>[Out of scope] Admins can add/edit events</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Non-Functional Requirements</h2>
+                                    <ol>
+                                        <li><strong>Availability:</strong> events viewing needs to be highly available</li>
+                                        <li><strong>Consistency:</strong> consistent for ticket booking. ACID.</li>
+                                        <li><strong>Scalability:</strong> scale to 10M DAU. Heavy reads.</li>
+                                        <li><strong>Low latency</strong> for event viewing and search</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Core Entities</h2>
+                                    <ol>
+                                        <li>User</li>
+                                        <li>Event</li>
+                                        <li>Ticket</li>
+                                        <li>Booking</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>API</h2>
+
+                                    <div className="api-endpoint">
+                                        <h3>1. Event Viewing</h3>
+                                        <div className="code-block">
+                                            <div className="code-line"><span className="method">GET</span> /events/{`{event-id}`}</div>
+                                            <div className="code-line response">⇒ 200 OK</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "event_id", "datetime", "venue", "performer", "ticket[]"</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. Event Search</h3>
+                                        <div className="code-block">
+                                            <div className="code-line"><span className="method">GET</span> /events?category=concert&date-from=2026-01-10&date-to=2026-01-12&page=5&page-size=10</div>
+                                            <div className="code-line response">⇒ 200 OK</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "events": [("event_id", "datetime", "venue", "performer"), ...]</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>3. POST /booking/reserve</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">Authorization: JWT | session_token</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "ticket_id"</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>4. POST /booking/confirm</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">Authorization: JWT | session_token</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "ticket_id"</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>5. GET /booking/{`{booking-id}`}</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">Authorization: JWT | session_token</div>
+                                            <div className="code-line response">⇒ 200 OK</div>
+                                            <div className="code-line">{`{`}</div>
+                                            <div className="code-line indent">  "ticket_id[]"</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>High Level Design</h2>
+                                    <ImageViewer
+                                        src={ticketBookingImage}
+                                        alt="Ticket Booking System - High Level System Design"
+                                    />
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Deep Dives</h2>
+                                    
+                                    <div className="api-endpoint">
+                                        <h3>1. How to improve the booking experience?</h3>
+                                        <p>Distributed lock with TTL (Redis)</p>
+                                        <p><strong>Alternative:</strong> Short transactions on Ticket Table.</p>
+                                        <div className="code-block">
+                                            <div className="code-line">BEGIN TRANSACTION</div>
+                                            <div className="code-line"></div>
+                                            <div className="code-line">rows_updated = UPDATE tickets</div>
+                                            <div className="code-line indent">               SET status = RESERVED,</div>
+                                            <div className="code-line indent">                   expires_at = now + 10 minutes</div>
+                                            <div className="code-line indent">               WHERE ticket_id = id</div>
+                                            <div className="code-line indent">                 AND (</div>
+                                            <div className="code-line indent">                      status == AVAILABLE</div>
+                                            <div className="code-line indent">                      OR (status == RESERVED AND expires_at &lt; now)</div>
+                                            <div className="code-line indent">                     )</div>
+                                            <div className="code-line"></div>
+                                            <div className="code-line">IF rows_updated == 0:</div>
+                                            <div className="code-line indent">    ROLLBACK</div>
+                                            <div className="code-line indent">    RETURN "Not available / retry"</div>
+                                            <div className="code-line"></div>
+                                            <div className="code-line">COMMIT</div>
+                                            <div className="code-line">RETURN "Reserved"</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. How to scale to concurrent requests during popular events?</h3>
+                                        <p>Caching, load balancing, horizontal scaling.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>3. How to improve user experience during high-demand events?</h3>
+                                        <p>For very popular events, add a virtual waiting queue with WebSocket connection for updates on user's eligibility to enter the ticket purchasing stage. Also update the User Table on the eligibility.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>4. How to improve search latency?</h3>
+                                        <p>Full-text search engine like ElasticSearch with change data capture (CDC) for real-time or near-real-time data sync between search engine and DB.</p>
+                                        <p><strong>Extensions:</strong></p>
+                                        <p>Leverage Elasticsearch query and request caches, optionally backed by a CDN for non-personalized searches, to reduce load and latency. Challenges include cache invalidation on data changes and added infrastructure complexity.</p>
                                     </div>
                                 </section>
                             </>
