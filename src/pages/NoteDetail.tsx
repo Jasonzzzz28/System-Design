@@ -134,6 +134,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={twitterNewsFeedImage}
                                         alt="Twitter News Feed - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
                             </>
@@ -206,6 +207,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={urlShortenerImage}
                                         alt="URL Shortener - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
 
@@ -344,6 +346,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={youtubeImage}
                                         alt="YouTube - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
                             </>
@@ -415,6 +418,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={jobSchedulerImage}
                                         alt="Distributed Job Scheduler - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
 
@@ -538,6 +542,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={ticketBookingImage}
                                         alt="Ticket Booking System - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
 
@@ -639,6 +644,7 @@ const NoteDetail = () => {
                                     <ImageViewer
                                         src={rateLimiterImage}
                                         alt="Rate Limiter - High Level System Design"
+                                        useLightbox={true}
                                     />
                                 </section>
 

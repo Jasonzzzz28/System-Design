@@ -4,10 +4,12 @@ import './ImageViewer.css';
 interface ImageViewerProps {
     src: string;
     alt: string;
+    useLightbox?: boolean;
 }
 
-const ImageViewer = ({ src, alt }: ImageViewerProps) => {
+const ImageViewer = ({ src, alt, useLightbox = false }: ImageViewerProps) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [panX, setPanX] = useState(0);
     const [panY, setPanY] = useState(0);
@@ -16,6 +18,8 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
     const imageContainerRef = useRef<HTMLDivElement>(null);
+    const lightboxImageRef = useRef<HTMLImageElement>(null);
+    const lightboxContainerRef = useRef<HTMLDivElement>(null);
     const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
     const panXRef = useRef(0);
     const panYRef = useRef(0);
@@ -53,33 +57,57 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
             }
         };
 
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        if (!useLightbox) {
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-        };
-    }, []);
+            return () => {
+                document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+                document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+                document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+            };
+        }
+    }, [useLightbox]);
 
-    // Mouse wheel zoom (only in fullscreen)
+    // Handle ESC key to close lightbox
     useEffect(() => {
-        if (!isFullscreen || !imageContainerRef.current || !imageRef.current) return;
+        if (!useLightbox || !isLightboxOpen) return;
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsLightboxOpen(false);
+                setZoom(1);
+                setPanX(0);
+                setPanY(0);
+                zoomRef.current = 1;
+                panXRef.current = 0;
+                panYRef.current = 0;
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [useLightbox, isLightboxOpen]);
+
+    // Mouse wheel zoom (only in fullscreen or lightbox)
+    useEffect(() => {
+        const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+        const container = useLightbox ? lightboxContainerRef.current : imageContainerRef.current;
+        const image = useLightbox ? lightboxImageRef.current : imageRef.current;
+        
+        if (!isActive || !container || !image) return;
 
         const handleWheel = (e: WheelEvent) => {
-            if (!isFullscreen) return;
-            
             e.preventDefault();
             const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
             const currentZoom = zoomRef.current;
             const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentZoom + delta));
             
-            if (imageContainerRef.current && imageRef.current) {
-                const containerRect = imageContainerRef.current.getBoundingClientRect();
+            if (container && image) {
+                const containerRect = container.getBoundingClientRect();
                 
                 // Mouse position relative to the container
                 const mouseX = e.clientX - containerRect.left;
@@ -102,22 +130,24 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
             setZoom(newZoom);
         };
 
-        const container = imageContainerRef.current;
         container.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => {
             container.removeEventListener('wheel', handleWheel);
         };
-    }, [isFullscreen]);
+    }, [isFullscreen, isLightboxOpen, useLightbox]);
 
-    // Drag to pan (only in fullscreen)
+    // Drag to pan (only in fullscreen or lightbox)
     useEffect(() => {
-        if (!isFullscreen || !imageContainerRef.current) return;
+        const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+        const container = useLightbox ? lightboxContainerRef.current : imageContainerRef.current;
+        
+        if (!isActive || !container) return;
 
         const handleMouseDown = (e: MouseEvent) => {
             // Only allow dragging if zoomed in and not clicking on buttons
             const target = e.target as HTMLElement;
-            if (target.closest('button') || target.closest('.image-controls')) {
+            if (target.closest('button') || target.closest('.image-controls') || target.closest('.lightbox-controls')) {
                 return;
             }
             
@@ -148,7 +178,6 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
             setIsDragging(false);
         };
 
-        const container = imageContainerRef.current;
         container.addEventListener('mousedown', handleMouseDown);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -158,9 +187,22 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isFullscreen, isDragging]);
+    }, [isFullscreen, isLightboxOpen, isDragging, useLightbox]);
 
     const toggleFullscreen = async () => {
+        if (useLightbox) {
+            setIsLightboxOpen(!isLightboxOpen);
+            if (isLightboxOpen) {
+                setZoom(1);
+                setPanX(0);
+                setPanY(0);
+                zoomRef.current = 1;
+                panXRef.current = 0;
+                panYRef.current = 0;
+            }
+            return;
+        }
+
         if (!containerRef.current) return;
 
         try {
@@ -191,7 +233,9 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
     };
 
     const handleZoomIn = () => {
-        if (!isFullscreen || !imageContainerRef.current) return;
+        const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+        const container = useLightbox ? lightboxContainerRef.current : imageContainerRef.current;
+        if (!isActive || !container) return;
         
         const currentZoom = zoomRef.current;
         const newZoom = Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP);
@@ -207,7 +251,9 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
     };
 
     const handleZoomOut = () => {
-        if (!isFullscreen || !imageContainerRef.current) return;
+        const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+        const container = useLightbox ? lightboxContainerRef.current : imageContainerRef.current;
+        if (!isActive || !container) return;
         
         const currentZoom = zoomRef.current;
         const newZoom = Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP);
@@ -230,7 +276,8 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
     };
 
     const handleResetZoom = () => {
-        if (!isFullscreen) return;
+        const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+        if (!isActive) return;
         setZoom(1);
         setPanX(0);
         setPanY(0);
@@ -239,7 +286,8 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
         panYRef.current = 0;
     };
 
-    const imageStyle = isFullscreen && zoom > MIN_ZOOM
+    const isActive = useLightbox ? isLightboxOpen : isFullscreen;
+    const imageStyle = isActive && zoom > MIN_ZOOM
         ? {
             transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
             cursor: isDragging ? 'grabbing' : 'grab',
@@ -252,80 +300,152 @@ const ImageViewer = ({ src, alt }: ImageViewerProps) => {
         };
 
     return (
-        <div className="image-viewer" ref={containerRef}>
-            <div className="image-controls">
-                <span className="zoom-hint">
-                    {isFullscreen 
-                        ? 'Scroll to zoom • Click and drag to pan' 
-                        : 'Enter fullscreen to zoom and pan'}
-                </span>
-                {isFullscreen && (
-                    <>
-                        <button
-                            className="control-btn"
-                            onClick={handleZoomOut}
-                            disabled={zoom <= MIN_ZOOM}
-                            aria-label="Zoom out"
-                            title="Zoom out"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="4" y1="8" x2="12" y2="8"/>
-                            </svg>
-                        </button>
-                        <span className="zoom-level">{Math.round(zoom * 100)}%</span>
-                        <button
-                            className="control-btn"
-                            onClick={handleZoomIn}
-                            disabled={zoom >= MAX_ZOOM}
-                            aria-label="Zoom in"
-                            title="Zoom in"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="8" y1="4" x2="8" y2="12"/>
-                                <line x1="4" y1="8" x2="12" y2="8"/>
-                            </svg>
-                        </button>
-                        {zoom > MIN_ZOOM && (
+        <>
+            <div className={`image-viewer ${useLightbox ? 'image-viewer-lightbox' : ''}`} ref={containerRef}>
+                <div className="image-controls">
+                    {isActive && (
+                        <span className="zoom-hint">
+                            Scroll to zoom • Click and drag to pan
+                        </span>
+                    )}
+                    {isActive && (
+                        <>
                             <button
                                 className="control-btn"
-                                onClick={handleResetZoom}
-                                aria-label="Reset zoom"
-                                title="Reset zoom"
+                                onClick={handleZoomOut}
+                                disabled={zoom <= MIN_ZOOM}
+                                aria-label="Zoom out"
+                                title="Zoom out"
                             >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M1 8a7 7 0 0 1 7-7M15 8a7 7 0 0 1-7 7M8 1v6M8 9v6"/>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="4" y1="8" x2="12" y2="8"/>
                                 </svg>
                             </button>
-                        )}
-                    </>
-                )}
-                <button
-                    className="control-btn fullscreen-btn"
-                    onClick={toggleFullscreen}
-                    aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                    title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                >
-                    {isFullscreen ? (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M6 2H4a2 2 0 0 0-2 2v2M10 2h2a2 2 0 0 1 2 2v2M6 14H4a2 2 0 0 1-2-2v-2M10 14h2a2 2 0 0 0 2-2v-2"/>
-                        </svg>
-                    ) : (
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M2 6V4a2 2 0 0 1 2-2h2M14 6V4a2 2 0 0 0-2-2h-2M2 10v2a2 2 0 0 0 2 2h2M14 10v2a2 2 0 0 1-2 2h-2"/>
-                        </svg>
+                            <span className="zoom-level">{Math.round(zoom * 100)}%</span>
+                            <button
+                                className="control-btn"
+                                onClick={handleZoomIn}
+                                disabled={zoom >= MAX_ZOOM}
+                                aria-label="Zoom in"
+                                title="Zoom in"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="8" y1="4" x2="8" y2="12"/>
+                                    <line x1="4" y1="8" x2="12" y2="8"/>
+                                </svg>
+                            </button>
+                            {zoom > MIN_ZOOM && (
+                                <button
+                                    className="control-btn"
+                                    onClick={handleResetZoom}
+                                    aria-label="Reset zoom"
+                                    title="Reset zoom"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 8a7 7 0 0 1 7-7M15 8a7 7 0 0 1-7 7M8 1v6M8 9v6"/>
+                                    </svg>
+                                </button>
+                            )}
+                        </>
                     )}
-                </button>
+                    <button
+                        className="control-btn fullscreen-btn"
+                        onClick={toggleFullscreen}
+                        aria-label={isActive ? (useLightbox ? 'Close lightbox' : 'Exit fullscreen') : (useLightbox ? 'Open lightbox' : 'Enter fullscreen')}
+                        title={isActive ? (useLightbox ? 'Close lightbox' : 'Exit fullscreen') : (useLightbox ? 'Open lightbox' : 'Enter fullscreen')}
+                    >
+                        {isActive ? (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="12" y1="4" x2="4" y2="12"/>
+                                <line x1="4" y1="4" x2="12" y2="12"/>
+                            </svg>
+                        ) : (
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M2 6V4a2 2 0 0 1 2-2h2M14 6V4a2 2 0 0 0-2-2h-2M2 10v2a2 2 0 0 0 2 2h2M14 10v2a2 2 0 0 1-2 2h-2"/>
+                            </svg>
+                        )}
+                    </button>
+                </div>
+                <div className="image-container" ref={imageContainerRef}>
+                    <img 
+                        ref={imageRef}
+                        src={src} 
+                        alt={alt} 
+                        className="design-image" 
+                        style={imageStyle}
+                    />
+                </div>
             </div>
-            <div className="image-container" ref={imageContainerRef}>
-                <img 
-                    ref={imageRef}
-                    src={src} 
-                    alt={alt} 
-                    className="design-image" 
-                    style={imageStyle}
-                />
-            </div>
-        </div>
+            {useLightbox && isLightboxOpen && (
+                <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
+                    <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="lightbox-controls">
+                            <span className="zoom-hint">
+                                Scroll to zoom • Click and drag to pan
+                            </span>
+                            <div className="lightbox-controls-right">
+                                <button
+                                    className="control-btn"
+                                    onClick={handleZoomOut}
+                                    disabled={zoom <= MIN_ZOOM}
+                                    aria-label="Zoom out"
+                                    title="Zoom out"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="4" y1="8" x2="12" y2="8"/>
+                                    </svg>
+                                </button>
+                                <span className="zoom-level">{Math.round(zoom * 100)}%</span>
+                                <button
+                                    className="control-btn"
+                                    onClick={handleZoomIn}
+                                    disabled={zoom >= MAX_ZOOM}
+                                    aria-label="Zoom in"
+                                    title="Zoom in"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="8" y1="4" x2="8" y2="12"/>
+                                        <line x1="4" y1="8" x2="12" y2="8"/>
+                                    </svg>
+                                </button>
+                                {zoom > MIN_ZOOM && (
+                                    <button
+                                        className="control-btn"
+                                        onClick={handleResetZoom}
+                                        aria-label="Reset zoom"
+                                        title="Reset zoom"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 8a7 7 0 0 1 7-7M15 8a7 7 0 0 1-7 7M8 1v6M8 9v6"/>
+                                        </svg>
+                                    </button>
+                                )}
+                                <button
+                                    className="control-btn"
+                                    onClick={() => setIsLightboxOpen(false)}
+                                    aria-label="Close lightbox"
+                                    title="Close lightbox"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="12" y1="4" x2="4" y2="12"/>
+                                        <line x1="4" y1="4" x2="12" y2="12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="lightbox-image-container" ref={lightboxContainerRef}>
+                            <img 
+                                ref={lightboxImageRef}
+                                src={src} 
+                                alt={alt} 
+                                className="lightbox-image" 
+                                style={imageStyle}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 
