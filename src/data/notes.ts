@@ -40,5 +40,13 @@ export const notes: Note[] = [
         date: '2026-01-06',
         slug: 'ticket-booking-system',
         tags: ['Ticket Booking', 'ACID', 'Distributed Lock', 'Full-text Search']
+    },
+    {
+        id: '6',
+        title: 'Rate Limiter',
+        description: 'A comprehensive system design for building a scalable rate limiter to handle high volume requests with high availability, eventual consistency, and low latency (< 10ms per request).',
+        date: '2026-01-08',
+        slug: 'rate-limiter',
+        tags: ['Rate Limiting', 'Token Bucket', 'Configuration Management', 'Sharding']
     }
 ];

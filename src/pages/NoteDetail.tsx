@@ -6,6 +6,7 @@ import urlShortenerImage from '../assets/url-shortener.svg';
 import youtubeImage from '../assets/youtube.svg';
 import jobSchedulerImage from '../assets/job-scheduler.svg';
 import ticketBookingImage from '../assets/ticket-booking.svg';
+import rateLimiterImage from '../assets/rate-limiter.svg';
 import './NoteDetail.css';
 
 const NoteDetail = () => {
@@ -583,6 +584,93 @@ const NoteDetail = () => {
                                         <p>Full-text search engine like ElasticSearch with change data capture (CDC) for real-time or near-real-time data sync between search engine and DB.</p>
                                         <p><strong>Extensions:</strong></p>
                                         <p>Leverage Elasticsearch query and request caches, optionally backed by a CDN for non-personalized searches, to reduce load and latency. Challenges include cache invalidation on data changes and added infrastructure complexity.</p>
+                                    </div>
+                                </section>
+                            </>
+                        ) : note.slug === 'rate-limiter' ? (
+                            <>
+                                <section className="content-section">
+                                    <h2>Functional Requirements</h2>
+                                    <ol>
+                                        <li>The system should identify the clients by client_id, ip_address or API key</li>
+                                        <li>The system should limit HTTP requests based on configurable rules</li>
+                                        <li>If the requests exceed the limit, the system should return HTTP 429 with reset time and other related info</li>
+                                        <li>[Out of Scope] Complex query or analytics on data</li>
+                                        <li>[Out of Scope] Long term persistence</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Non-Functional Requirements</h2>
+                                    <ol>
+                                        <li><strong>High availability</strong></li>
+                                        <li><strong>Eventual consistency</strong> for rate limiting across nodes</li>
+                                        <li><strong>Low latency</strong> (&lt; 10ms per request)</li>
+                                        <li><strong>Scale:</strong> Handle high volume and throughput of requests</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Core Entities</h2>
+                                    <ol>
+                                        <li>Client</li>
+                                        <li>Request</li>
+                                        <li>Rules</li>
+                                    </ol>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>API</h2>
+
+                                    <div className="api-endpoint">
+                                        <h3>1. is_request_allowed(client_id, rule_id)</h3>
+                                        <div className="code-block">
+                                            <div className="code-line">⇒ {`{`}</div>
+                                            <div className="code-line indent">  "is_allowed": boolean,</div>
+                                            <div className="code-line indent">  "remaining": number,</div>
+                                            <div className="code-line indent">  "reset_time": time_stamp</div>
+                                            <div className="code-line">{`}`}</div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>High Level Design</h2>
+                                    <ImageViewer
+                                        src={rateLimiterImage}
+                                        alt="Rate Limiter - High Level System Design"
+                                    />
+                                </section>
+
+                                <section className="content-section">
+                                    <h2>Deep Dives</h2>
+                                    
+                                    <div className="api-endpoint">
+                                        <h3>1. Scaling?</h3>
+                                        <p>Sharding: stateless services, sharding on Redis with potentially User ID or IP as the sharding key with consistent hashing.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>2. High availability and fault tolerance</h3>
+                                        <p>Replication: master-slave replication with async replication. (Redis Cluster) (High availability but increased cost and replica synchronization lag.)</p>
+                                        <p>If all replicas of that shard fail → Fail Closed (Reject all requests for that shard) | Fail Open (Allow requests without rate limiter)</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>3. Minimize latency?</h3>
+                                        <p>Connection pooling: Use persistent Redis connections instead of creating a new TCP connection per rate-limit check. This avoids TCP handshake overhead (20–50ms) and allows reuse across requests. Most Redis clients pool connections automatically; tune pool size based on traffic and Redis latency.</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>4. Hot keys?</h3>
+                                        <p><strong>Legitimate clients:</strong> encourage client-side rate limiting, support request batching, and offer higher limits via tiers.</p>
+                                        <p><strong>Abusive traffic:</strong> auto-block repeat offenders and rely on upstream DDoS protection (e.g., Cloudflare or AWS Shield).</p>
+                                    </div>
+
+                                    <div className="api-endpoint">
+                                        <h3>5. Dynamic config?</h3>
+                                        <p>ZooKeeper or etcd.</p>
+                                        <p>poll-based vs push-based? Use push-based for changes since config changes are not often.</p>
                                     </div>
                                 </section>
                             </>
